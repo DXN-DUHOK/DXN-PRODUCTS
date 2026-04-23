@@ -1,55 +1,57 @@
-<!DOCTYPE html>
-<html dir="rtl" lang="ku">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DXN Catalog</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { font-family: 'Tahoma', sans-serif; }
-    </style>
-</head>
-<body class="bg-gray-100 pb-24">
-    <header class="bg-green-700 text-white p-4 text-center shadow-md mb-6">
-        <h1 class="text-2xl font-bold">کەتەلۆگی زیرەکی DXN</h1>
-    </header>
-
-    <div id="product-list" class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="bg-white p-4 rounded-lg shadow flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <img src="https://www.dxnarabia.com/img/products/101.png" class="w-20 h-20 object-contain" alt="Ganozh">
-                <div>
-                    <h3 class="font-bold">مەعجونی ددان</h3>
-                    <p class="text-green-600 font-bold">IQD 9,500</p>
+<div class="text-right">
+                            <p class="text-green-700 font-bold">${p.price.toLocaleString()} IQD</p>
+                            <p class="text-[10px] bg-blue-50 text-blue-700 px-2 rounded-full inline-block italic">${p.pv} PV</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="updateCart(${p.id}, -1)" class="bg-gray-100 w-8 h-8 rounded-lg font-bold text-red-500">-</button>
+                            <span id="qty-${p.id}" class="font-bold w-4 text-center">0</span>
+                            <button onclick="updateCart(${p.id}, 1)" class="bg-green-100 w-8 h-8 rounded-lg font-bold text-green-700">+</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <button onclick="addToCart(1, 'مەعجون', 9500)" class="bg-green-500 text-white w-10 h-10 rounded-full text-xl">+</button>
-        </div>
-    </div>
-
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-between items-center shadow-lg">
-        <div class="text-right">
-            <p class="font-bold text-green-700">کۆی گشتی: <span id="total-price">0</span> IQD</p>
-        </div>
-        <button onclick="sendWhatsApp()" class="bg-green-600 text-white px-6 py-2 rounded-lg font-bold">تەواوکرنی کڕین</button>
-    </div>
-
-    <script>
-        let cart = {};
-        function addToCart(id, name, price) {
-            cart[id] = (cart[id] || 0) + 1;
-            updateUI();
+            ).join('');
         }
-        function updateUI() {
-            let total = 0;
-            for (let id in cart) { total += cart[id] * 9500; }
+
+        function updateCart(id, change) {
+            cart[id] = (cart[id] || 0) + change;
+            if (cart[id] <= 0) delete cart[id];
+            
+            document.getElementById(qty-${id}).innerText = cart[id] || 0;
+            updateSummary();
+        }
+
+        function updateSummary() {
+            let total = 0, pv = 0, count = 0;
+            for (let id in cart) {
+                const p = products.find(prod => prod.id == id);
+                total += p.price * cart[id];
+                pv += p.pv * cart[id];
+                count += cart[id];
+            }
+            
             document.getElementById('total-price').innerText = total.toLocaleString();
+            document.getElementById('total-pv').innerText = pv;
+            document.getElementById('cart-count').innerText = count;
+            
+            const bar = document.getElementById('cart-bar');
+            bar.style.transform = count > 0 ? "translateY(0)" : "translateY(100%)";
         }
-        function sendWhatsApp() {
-            let msg = "سڵاو، تکایە ئەم داواکارییانەم بۆ جێبەجێ بکە:\n";
-            for (let id in cart) { msg += - مەعجون: ${cart[id]} دانە\n; }
-            window.open(https://wa.me/9647508168860?text=${encodeURIComponent(msg)});
+
+        function checkout() {
+            let msg = "سڵاو کاکە، من دڤێت ئەڤان بەرهەمان تەلەب بکەم:%0A%0A";
+            for (let id in cart) {
+                const p = products.find(prod => prod.id == id);
+                msg += 🔘 *${p.name}* (عددا: ${cart[id]})%0A;
+            }
+            msg += %0A💰 کۆما پارەی: ${document.getElementById('total-price').innerText} IQD;
+            msg += %0A💎 کۆما خالان: ${document.getElementById('total-pv').innerText} PV;
+            msg += %0A%0Aهیڤییە بەرهەم ل سەر ناڤ و نیشانێن من بهێنە رەوانەکرن.;
+            
+            // ژمارا واتساپا کومپانیێ ل ڤێرە بگوهۆڕە
+            window.open(https://wa.me/9647507766394?text=${msg}`);
         }
+
+        init();
     </script>
 </body>
-</html> 
+</html>
