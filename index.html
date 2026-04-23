@@ -3,84 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DXN Catalog</title>
+    <title>DXN Products - Duhok</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
-        body { font-family: 'Vazirmatn', sans-serif; background-color: #f3f4f6; }
+        body { font-family: 'Vazirmatn', sans-serif; background-color: #f0f2f5; }
+        .product-card { background: white; border-radius: 15px; margin-bottom: 12px; padding: 12px; display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .product-img { width: 80px; height: 80px; object-fit: contain; margin-left: 15px; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <div id="page1" class="max-w-md mx-auto p-4">
-        <div class="bg-green-700 text-white p-4 rounded-b-2xl shadow-lg text-center mb-6">
-            <h1 class="text-xl font-bold text-yellow-300">کەتەلۆگێ زیرەکێ DXN</h1>
+    <div id="page1" class="max-w-md mx-auto p-3">
+        <div class="bg-white p-4 rounded-2xl shadow-sm mb-4 text-center border-b-4 border-green-600">
+            <h1 class="text-xl font-bold text-green-800">قائمة منتجات DXN</h1>
         </div>
-        
-        <div id="product-list" class="space-y-4">
-            <div class="bg-white p-4 rounded-2xl shadow-sm flex items-center border-r-4 border-green-600">
-                <div class="flex-grow">
-                    <h3 class="font-bold">کەکەوا کوکوزی</h3>
-                    <p class="text-green-700 font-bold text-sm">26,000 IQD | <span class="text-blue-600">13 PV</span></p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <button onclick="changeQty(1, -1)" class="w-8 h-8 bg-gray-100 rounded-full font-bold text-red-600">-</button>
-                    <span id="qty-1" class="font-bold">0</span>
-                    <button onclick="changeQty(1, 1)" class="w-8 h-8 bg-green-100 rounded-full font-bold text-green-600">+</button>
-                </div>
-            </div>
-            </div>
 
-        <button onclick="showPage2()" class="w-full bg-green-600 text-white mt-10 py-4 rounded-2xl font-bold shadow-xl">بەرەو فاتوورێ ➔</button>
+        <div id="products-container">
+            <div class="product-card">
+                <img src="https://i.postimg.cc/9MhF9B88/1000071850.jpg" class="product-img">
+                <div class="flex-grow text-right">
+                    <h3 class="font-bold text-gray-800">کەکەوا کوکوزی</h3>
+                    <p class="text-green-600 font-bold text-sm">26,000 IQD</p>
+                    <p class="text-blue-500 text-xs font-bold">13 PV</p>
+                </div>
+                <div class="flex flex-col items-center gap-1 border-r pr-3">
+                    <button onclick="updateQty(1, 1)" class="w-8 h-8 bg-green-100 text-green-700 rounded-lg font-bold">+</button>
+                    <span id="qty-1" class="font-bold">0</span>
+                    <button onclick="updateQty(1, -1)" class="w-8 h-8 bg-red-50 text-red-600 rounded-lg font-bold">-</button>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="https://i.postimg.cc/tCRj3x9V/1000071852.jpg" class="product-img">
+                <div class="flex-grow text-right">
+                    <h3 class="font-bold text-gray-800">زەیتا جانۆ</h3>
+                    <p class="text-green-600 font-bold text-sm">16,000 IQD</p>
+                    <p class="text-blue-500 text-xs font-bold">9 PV</p>
+                </div>
+                <div class="flex flex-col items-center gap-1 border-r pr-3">
+                    <button onclick="updateQty(2, 1)" class="w-8 h-8 bg-green-100 text-green-700 rounded-lg font-bold">+</button>
+                    <span id="qty-2" class="font-bold">0</span>
+                    <button onclick="updateQty(2, -1)" class="w-8 h-8 bg-red-50 text-red-600 rounded-lg font-bold">-</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-2xl border-t flex justify-between items-center max-w-md mx-auto">
+            <div>
+                <p class="text-xs text-gray-500">کۆما پارەی:</p>
+                <p class="font-bold text-green-700"><span id="total-price">0</span> IQD</p>
+            </div>
+            <button onclick="goToForm()" class="bg-green-600 text-white px-8 py-3 rounded-xl font-bold">طلب ➔</button>
+        </div>
     </div>
 
-    <div id="page2" class="hidden max-w-md mx-auto p-4">
-        <div class="bg-white p-6 rounded-3xl shadow-2xl">
-            <h2 class="text-center font-bold text-lg mb-6 border-b pb-2">زانیاریێن داخوازکەر</h2>
+    <div id="page2" class="hidden max-w-md mx-auto p-4 pt-10">
+        <div class="bg-white p-6 rounded-3xl shadow-xl">
+            <h2 class="text-center font-bold text-xl mb-6 text-gray-700">تکمیل الطلب</h2>
             <div class="space-y-4">
-                <input id="memberName" type="text" placeholder="ناڤێ ئەندامی" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-green-500">
-                <input id="memberCode" type="text" placeholder="کۆدێ ئەندامی" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-green-500">
-                <input id="customerLoc" type="text" placeholder="ناڤونیشان" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-green-500">
-                <input id="customerPhone" type="tel" placeholder="ژمارا تەلەفۆنا بکری" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-green-500">
-            </div>
-            
-            <div class="my-6 p-4 bg-green-50 rounded-2xl border border-green-100">
-                <p class="flex justify-between font-bold text-green-800"><span>کۆما پارەی:</span> <span id="finalPrice">0</span> IQD</p>
-                <p class="flex justify-between text-sm text-blue-700 mt-2"><span>کۆما خالان:</span> <span id="finalPV">0</span> PV</p>
+                <input id="mName" type="text" placeholder="اسم العضو (ناڤێ ئەندامی)" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:ring-2 focus:ring-green-500 text-right">
+                <input id="mCode" type="text" placeholder="رقم العضوية (کۆدێ ئەندامی)" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:ring-2 focus:ring-green-500 text-right">
+                <input id="cPhone" type="tel" placeholder="رقم الهاتف (تەلەفۆن)" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:ring-2 focus:ring-green-500 text-right">
+                <input id="cLoc" type="text" placeholder="العنوان (ناڤونیشان)" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:ring-2 focus:ring-green-500 text-right">
             </div>
 
-            <button onclick="sendToWA()" class="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-lg">OK - هنارتن بۆ واتساپێ</button>
+            <div class="mt-6 p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                <p class="flex justify-between font-bold"><span>الاجمالي:</span> <span id="summary-price">0</span> IQD</p>
+                <p class="flex justify-between text-blue-600 text-sm mt-1"><span>النقاط (PV):</span> <span id="summary-pv">0</span></p>
+            </div>
+
+            <div class="flex gap-2 mt-8">
+                <button onclick="location.reload()" class="w-1/3 py-4 text-gray-500 font-bold">رجوع</button>
+                <button onclick="sendWA()" class="w-2/3 bg-green-600 text-white py-4 rounded-2xl font-bold shadow-lg">OK - واتساب</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const cart = { 1: { name: "کەکەوا کوکوزی", price: 26000, pv: 13, qty: 0 } };
+        const products = {
+            1: { name: "کەکەوا کوکوزی", price: 26000, pv: 13, qty: 0 },
+            2: { name: "زەیتا جانۆ", price: 16000, pv: 9, qty: 0 }
+        };
 
-        function changeQty(id, amt) {
-            cart[id].qty = Math.max(0, cart[id].qty + amt);
-            document.getElementById(qty-${id}).innerText = cart[id].qty;
+        function updateQty(id, change) {
+            products[id].qty = Math.max(0, products[id].qty + change);
+            document.getElementById(qty-${id}).innerText = products[id].qty;
+            calculate();
         }
 
-        function showPage2() {
-            let total = 0, pv = 0, count = 0;
-            for(let id in cart) {
-                total += cart[id].qty * cart[id].price;
-                pv += cart[id].qty * cart[id].pv;
-                count += cart[id].qty;
+        function calculate() {
+            let total = 0, pv = 0;
+            for(let id in products) {
+                total += products[id].qty * products[id].price;
+                pv += products[id].qty * products[id].pv;
             }
-            if(count === 0) return alert("تکایە بەرهەمەکێ هەلبژێرە!");
-          document.getElementById('finalPrice').innerText = total.toLocaleString();
-            document.getElementById('finalPV').innerText = pv;
+            document.getElementById('total-price').innerText = total.toLocaleString();
+            return { total, pv };
+        }
+
+        function goToForm() {
+            const data = calculate();
+            if(data.total === 0) return alert("تکایە بەرهەمەکێ هەلبژێرە!");
+            document.getElementById('summary-price').innerText = data.total.toLocaleString();
+            document.getElementById('summary-pv').innerText = data.pv;
             document.getElementById('page1').classList.add('hidden');
             document.getElementById('page2').classList.remove('hidden');
         }
 
-        function sendToWA() {
-            const name = document.getElementById('memberName').value;
-            const loc = document.getElementById('customerLoc').value;
-            if(!name || !loc) return alert("تکایە ناڤ و جهی بنڤیسە!");
+        function sendWA() {
+            const name = document.getElementById('mName').value;
+            const code = document.getElementById('mCode').value;
+            const phone = document.getElementById('cPhone').value;
+            const loc = document.getElementById('cLoc').value;
 
-            let msg = 📋 *تەلەبیاتا DXN نوو*%0A👤 ناڤ: ${name}%0A📍 جهـ: ${loc}%0A📦 بەرهەم: ${cart[1].qty} دانە کوکوزی%0A💰 کۆم: ${document.getElementById('finalPrice').innerText} IQD;
+            if(!name || !loc) return alert("تکایە ناڤ و ناڤونیشانی بنڤیسە!");
+
+            let msg = 📋 *طلبية DXN جديدة*%0A%0A;
+            msg += 👤 الاسم: *${name}*%0A🆔 الكود: *${code}*%0A📞 الهاتف: *${phone}*%0A📍 العنوان: *${loc}*%0A%0A;
+            msg += 🛒 *المنتجات:*%0A;
+
+            for(let id in products) {
+                if(products[id].qty > 0) {
+                    msg += ▫️ ${products[id].name} (x${products[id].qty})%0A;
+                }
+            }
+
+            msg += %0A💰 السعر: *${document.getElementById('summary-price').innerText} IQD*;
+            msg += %0A💎 النقاط: *${document.getElementById('summary-pv').innerText} PV*;
+
             window.open(https://wa.me/9647508168860?text=${msg});
         }
     </script>
