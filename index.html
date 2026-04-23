@@ -1,237 +1,52 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<!-- Playables SDK -->
-<script>// Playables SDK v1.0.0
-// Game lifecycle bridge: rAF-based game-ready detection + event communication
-(function() {
-  'use strict';
-
-  // Idempotency: skip if already initialized (e.g., server-side injection
-  // followed by client-side inject-javascript via the Bloks webview component).
-  if (window.playablesSDK) return;
-
-  var HANDLER_NAME = 'playablesGameEventHandler';
-  var ANDROID_BRIDGE_NAME = '_MetaPlayablesBridge';
-  var RAF_FRAME_THRESHOLD = 3;
-
-  var gameReadySent = false;
-  var firstInteractionSent = false;
-  var errorSent = false;
-  var frameCount = 0;
-  var originalRAF = window.requestAnimationFrame;
-
-  // --- Transport Layer ---
-
-  function hasIOSBridge() {
-    return !!(window.webkit &&
-              window.webkit.messageHandlers &&
-              window.webkit.messageHandlers[HANDLER_NAME]);
-  }
-
-  function hasAndroidBridge() {
-    return !!(window[ANDROID_BRIDGE_NAME] &&
-              typeof window[ANDROID_BRIDGE_NAME].postEvent === 'function');
-  }
-
-  function isInIframe() {
-    return !!(window.parent && window.parent !== window);
-  }
-
-  function sendEvent(eventName, payload) {
-    var message = {
-      type: eventName,
-      payload: payload || {},
-      timestamp: Date.now()
-    };
-
-    if (hasIOSBridge()) {
-      try {
-        window.webkit.messageHandlers[HANDLER_NAME].postMessage(message);
-      } catch (e) { /* ignore */ }
-      return;
-    }
-
-    if (hasAndroidBridge()) {
-    try {
-      var p = payload || {};
-      p.secureToken = window.fbAndroidBridgeAuthToken || '';
-      window[ANDROID_BRIDGE_NAME].postEvent(
-        eventName,
-        JSON.stringify(p)
-      );
-    } catch (e) { /* ignore */ }
-    return;
-  }
-
-    if (isInIframe()) {
-      try {
-        window.parent.postMessage(message, '*');
-      } catch (e) { /* ignore */ }
-      return;
-    }
-  }
-
-  // --- rAF Game-Ready Detection ---
-
-  function onFrame() {
-    if (gameReadySent) return;
-
-    frameCount++;
-    if (frameCount >= RAF_FRAME_THRESHOLD) {
-      gameReadySent = true;
-      sendEvent('game_ready', {
-        frame_count: frameCount,
-        detected_at: Date.now()
-      });
-      return;
-    }
-
-    originalRAF.call(window, onFrame);
-  }
-
-  if (originalRAF) {
-    window.requestAnimationFrame = function(callback) {
-      if (!gameReadySent) {
-        return originalRAF.call(window, function(timestamp) {
-          frameCount++;
-          if (frameCount >= RAF_FRAME_THRESHOLD && !gameReadySent) {
-            gameReadySent = true;
-            sendEvent('game_ready', {
-              frame_count: frameCount,
-              detected_at: Date.now()
-            });
-          }
-          callback(timestamp);
-        });
-      }
-      return originalRAF.call(window, callback);
-    };
-  }
-
-  // --- First User Interaction Detection ---
-
-  function setupFirstInteractionDetection() {
-    var events = ['touchstart', 'mousedown', 'keydown'];
-
-    function onFirstInteraction() {
-      if (firstInteractionSent) return;
-      firstInteractionSent = true;
-      sendEvent('user_interaction_start', null);
-
-      for (var i = 0; i < events.length; i++) {
-        document.removeEventListener(events[i], onFirstInteraction, true);
-      }
-    }
-
-    for (var i = 0; i < events.length; i++) {
-      document.addEventListener(events[i], onFirstInteraction, true);
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupFirstInteractionDetection);
-  } else {
-    setupFirstInteractionDetection();
-  }
-
-  // --- Auto Error Capture ---
-
-  window.addEventListener('error', function(event) {
-    if (errorSent) return;
-    errorSent = true;
-    sendEvent('error', {
-      message: event.message || 'Unknown error',
-      source: event.filename || '',
-      lineno: event.lineno || 0,
-      colno: event.colno || 0,
-      auto_captured: true
-    });
-  });
-    window.addEventListener('unhandledrejection', function(event) {
-    if (errorSent) return;
-    errorSent = true;
-    var reason = event.reason;
-    sendEvent('error', {
-      message: (reason instanceof Error) ? reason.message : String(reason),
-      type: 'unhandled_promise_rejection',
-      auto_captured: true
-    });
-  });
-
-  // --- Public API ---
-
-  window.playablesSDK = {
-    complete: function(score) {
-      sendEvent('game_ended', {
-        score: score,
-        completed: true
-      });
-    },
-
-    error: function(message) {
-      if (errorSent) return;
-      errorSent = true;
-      sendEvent('error', {
-        message: message || 'Unknown error',
-        auto_captured: false
-      });
-    },
-
-    sendEvent: function(eventName, payload) {
-      if (!eventName || typeof eventName !== 'string') return;
-      sendEvent(eventName, payload);
-    }
-  };
-
-  // Kick off rAF detection in case no game code calls rAF immediately
-  if (originalRAF) {
-    originalRAF.call(window, onFrame);
-  }
-})();</script>
-<script>window.Intl=window.Intl{};Intl.t=function(s){return(Intl._locale&&Intl._locale[s])s;};</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DXN Products - طلب</title>
+<title>DXN Duhok - طلبات</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <div class="search-box">
-    <input type="text" id="search" placeholder="البحث عن منتج">
+<header class="main-header">
+  <div class="header-content">
+    <img src="https://i.imgur.com/0rQ6ZtM.png" alt="DXN Logo" class="logo">
+    <div class="search-container">
+      <input type="text" id="search" placeholder="البحث عن منتج">
+    </div>
   </div>
 </header>
 
-<main id="products"></main>
+<main id="products" class="products-grid"></main>
 
 <div class="bottom-bar">
   <div class="totals">
-    <span id="total-price">IQD 0</span>
-    <span id="total-points">0 نقطة</span>
+    <div id="total-price">0 IQD</div>
+    <div id="total-points">0 نقطة</div>
   </div>
   <div class="actions">
-    <button id="reset" class="btn gray">تصفير</button>
-    <button id="checkout" class="btn green">حساب</button>
+    <button id="reset" class="btn btn-gray">تصفير</button>
+    <button id="checkout" class="btn btn-green">حساب</button>
   </div>
 </div>
 
-<!-- صفحة الحساب -->
 <div id="checkout-modal" class="modal hidden">
   <div class="modal-content">
-    <h3>معلومات الطلب</h3>
+    <h3 class="modal-title">معلومات الطلب</h3>
     <div class="form-grid">
       <input id="cust-name" placeholder="اسم العضو">
       <input id="cust-id" placeholder="رقم العضوية">
       <input id="cust-phone" placeholder="رقم التلفون">
       <input id="cust-address" placeholder="العنوان">
     </div>
-    <table id="order-table">
-      <thead><tr><th>اسم المنتج</th><th>عدد</th><th>نقطة</th><th>سعر</th><th>المجموع</th></tr></thead>
-      <tbody></tbody>
-    </table>
+    <div class="table-wrapper">
+      <table id="order-table">
+        <thead><tr><th>اسم المنتج</th><th>عدد</th><th>نقطة</th><th>سعر</th><th>المجموع</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
     <div class="modal-actions">
-      <button id="cancel-order" class="btn gray">إلغاء</button>
-      <button id="send-whatsapp" class="btn green">طلب ✓</button>
+      <button id="cancel-order" class="btn btn-gray">إلغاء</button>
+      <button id="send-whatsapp" class="btn btn-green">طلب ✓</button>
     </div>
   </div>
 </div>
@@ -240,9 +55,170 @@
 <script src="app.js"></script>
 </body>
 </html>
+:root{
   --dxn-green:#00a884;
   --dxn-dark:#075e54;
   --bg:#f0f2f5;
   --white:#fff;
   --gray:#8696a0;
   --light-gray:#e9edef;
+}
+*{box-sizing:border-box;font-family:'Segoe UI',Tahoma,Arial;margin:0;padding:0}
+body{background:var(--bg);color:#111;padding-bottom:85px}
+.main-header{background:var(--dxn-dark);padding:8px 12px;position:sticky;top:0;z-index:100}
+.header-content{display:flex;align-items:center;gap:10px;max-width:1200px;margin:0 auto}
+.logo{height:40px;width:auto}
+.search-container{flex:1}
+.search-container input{width:100%;padding:10px 15px;border:none;border-radius:8px;font-size:15px;background:var(--white)}
+.products-grid{padding:12px;display:grid;gap:8px;max-width:1200px;margin:0 auto}
+.product{background:var(--white);border-radius:12px;padding:10px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.product img{width:65px;height:65px;object-fit:contain;border-radius:8px;background:#fafafa;border:1px solid #f0f0f0}
+.prod-info{flex:1}
+.prod-name{font-weight:600;font-size:15px;margin-bottom:3px;line-height:1.3}
+.prod-meta{color:var(--gray);font-size:13px}
+.prod-price{color:var(--dxn-dark);font-weight:700}
+.qty-controls{display:flex;align-items:center;gap:6px}
+.qty-btn{width:34px;height:34px;border-radius:50%;border:1px solid #ddd;background:var(--white);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dxn-green)}
+.qty-btn:active{background:#f5f5f5}
+.qty-badge{background:var(--dxn-green);color:var(--white);min-width:26px;height:26px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;padding:0 7px}
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--light-gray);display:flex;justify-content:space-between;align-items:center;padding:10px 12px;gap:10px;box-shadow:0 -2px 5px rgba(0,0,0,.05)}
+.totals{display:flex;flex-direction:column;font-weight:700;font-size:15px}
+.totals div:first-child{color:var(--dxn-dark)}
+.totals div:last-child{color:var(--gray);font-size:14px}
+.actions{display:flex;gap:8px}
+.btn{padding:11px 20px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer}
+.btn-green{background:var(--dxn-green);color:var(--white)}
+.btn-green:active{background:var(--dxn-dark)}
+.btn-gray{background:var(--light-gray);color:#333}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:15px;z-index:200}
+.modal.hidden{display:none}
+.modal-content{background:var(--white);width:100%;max-width:650px;border-radius:16px;padding:18px;max-height:92vh;overflow:auto}
+.modal-title{font-size:18px;margin-bottom:12px;color:var(--dxn-dark)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.form-grid input{padding:11px;border:1px solid #ddd;border-radius:8px;font-size:15px}
+.form-grid input:focus{outline:none;border-color:var(--dxn-green)}
+.table-wrapper{overflow-x:auto;margin-top:10px}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:400px}
+th,td{border-bottom:1px solid #eee;padding:8px 6px;text-align:right}
+th{background:#fafafa;font-weight:600}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:15px}
+@media(max-width:600px){
+  .form-grid{grid-template-columns:1fr}
+  .prod-name{font-size:14px}
+  .product img{width:55px;height:55px}
+}
+let cart = JSON.parse(localStorage.getItem('dxn_cart')||'{}');
+
+const productsEl = document.getElementById('products');
+const TotalPriceEl = document.getElementById('total-price');
+const totalPointsEl = document.getElementById('total-points');
+
+دالة renderProducts(filter=''){
+  productsEl.innerHTML='';
+  PRODUCTS.filter(p=>p.name.includes(filter)).forEach(p=>{
+    const qty = cart[p.id]||0;
+    const div = document.createElement('div');
+    div.className='product';
+    div.innerHTML=
+      <img src="${p.img}" alt="${p.name}" onerror="this.src='https://i.imgur.com/8Km9tLL.png'">
+      <div class="prod-info">
+        <div class="prod-name">${p.name}</div>
+        <div class="prod-meta">${p.points} ظ†ظ‚ط·ط© | <span class="prod-price">${p.price.toLocaleString()} دينار عراقي</span></div>
+      </div>
+      <div class="qty-controls">
+        ${qty>0?<span class="qty-badge">${qty}</span>:''}
+        <button class="qty-btn" onclick="addToCart(${p.id},1)">+</button>
+        ${qty>0?<button class="qty-btn" onclick="addToCart(${p.id},-1)">-</button>:''}
+      </div>
+    ;
+    productsEl.appendChild(div);
+  });
+  تحديث الإجماليات();
+}
+
+دالة إضافة إلى السلة (المعرف، دلتا) {
+  cart[id]=(cart[id]||0)+delta;
+  إذا كان (cart[id]<=0) احذف cart[id]؛
+  localStorage.setItem('dxn_cart',JSON.stringify(cart));
+  renderProducts(document.getElementById('search').value);
+}
+
+دالة تحديث الإجماليات(){
+  لنفترض أن المجموع = 0، والنقاط = 0؛
+  Object.entries(cart).forEach(([id,qty])=>{
+    const p=PRODUCTS.find(x=>x.id==id);
+    إذا كان (p) {الإجمالي += p.السعر * الكمية؛ النقاط += p.النقاط * الكمية؛}
+  });
+  TotalPriceEl.textContent=${total.toLocaleString()} IQD;
+  TotalPointsEl.textContent=${points} ظ†ظ‚ط·ط©;
+}
+
+document.getElementById('search').addEventListener('input',e=>renderProducts(e.target.value));
+document.getElementById('reset').onclick=()=>{if(confirm('ط¯عµظ†غŒط§غŒ ط¯غژ ظ‡غ•ظ…غŒ ط³غ•ظ„غ•غŒ عکغژط¨ط¨غ•غŒطں')){cart={};localStorage.removeItem('dxn_cart');renderProducts();}};
+
+const modal=document.getElementById('checkout-modal');
+document.getElementById('checkout').onclick=()=>{
+  if(Object.keys(cart).length===0){alert('ط³غ•ظ„غ• ط®ط§ظ‹غŒغ•طŒ طھع©ط§غŒغ• ط¨غ•ط±ظ‡غ•ظ…غ•ع©غژ ط²غŒط§ط¯ ط¨ع©غ•');return;}
+  const tbody=document.querySelector('#order-table tbody');
+  tbody.innerHTML='';
+  Object.entries(cart).forEach(([id,qty])=>{
+    const p=PRODUCTS.find(x=>x.id==id);
+    tbody.innerHTML+=<tr><td>${p.name}</td><td>${qty}</td><td>${p.points}</td><td>${p.price.toLocaleString()}</td><td>${(p.price*qty).toLocaleString()}</td></tr>;
+  });
+  modal.classList.remo('hidden');
+};
+document.getElementById('cancel-order').onclick=()=>modal.classList.add('hidden');
+
+document.getElementById('send-whatsapp').onclick=()=>{
+  const name=document.getElementById('cust-name').value.trim();
+  const id=document.getElementById('cust-id').value.trim();
+  const phone=document.getElementById('cust-phone').value.trim();
+  const addr=document.getElementById('cust-address').value.trim();
+  
+  if(!name||!phone){alert('طھع©ط§غŒغ• ظ†ط§ع¤ ظˆ عکظ…ط§ط±ط§ طھظ„ظپظˆظ†غژ ط¨ظ†ع¤غŒط³غ•');return;}
+  
+  let total=0, points=0, itemsText='';
+  Object.entries(cart).forEach(([pid,qty])=>{
+    const p=PRODUCTS.find(x=>x.id==pid);
+    المجموع الكلي += السعر × الكمية؛
+    النقاط += نقاط p * الكمية؛
+    itemsText+=${p.name} ط¹ط¯ط¯ ${qty}\n;
+  });
+
+  const message = ط§ظ„ط§ط³ظ…: ${name}
+ط±ظ‚ظ… ط§ظ„ط¹ط¶ظˆظٹط©: ${id||'-'}
+ط±ظ‚ظ… ط§ظ‹طھظ‹ظپظˆظ†: ${phone}
+ط¹ظ†ظˆط§ظ†: ${addr||'-'}
+
+${itemsText}
+ظ†ظ‚ط§ط·: ${points}
+ط³ط¹ط±: IQD ${total.toLocaleString()}
+المطور: ZM-development
+
+  const url = https://wa.me/${COMPANY_WHATSAPP}?text=${encodeURIComponent(message)}`;
+  window.open(url,'_blank');
+  modal.classList.add('hidden');
+};
+
+renderProducts(gano);
+    // ط¨غ•ط±ظ‡غ•ظ…غژظ† DXN ظˆغ•ع© dxnduhok.github.io - ط¯ع¯غ•ظ„ ظˆغژظ†غژظ† ط±ط§ط³طھغ•ظ‚غŒظ†غ•
+const PRODUCTS = [
+  {id:1, name:"ظ‚ظ‡ظˆط© ظ„ظٹظ†ط¬ط²ظٹ 3 ظپظٹ 1", price:19500, points:10, img:"https://i.imgur.com/8Km9tLL.png"},
+  {id:2, name:"ط¹طµظٹط± ط±ظˆط³ظٹظ„", price:17750, points:12, img:"https://i.imgur.com/2yaf2wb.png"},
+  {id:3, name:"ط¹طµظٹط± ظ…ظˆط±ظ†ط²ظٹ", price:25750, points:17, img:"https://i.imgur.com/3ZQ3Z9O.png"},
+  {id:4, name:"ظƒظˆظƒظˆط²ظٹ", price:26000, points:13, img:"https://i.imgur.com/5c8bJtE.png"},
+  {id:5, name:"ظ…ظˆط±ظ†ط²ط§ظٹظ…", price:25750, points:17, img:"https://i.imgur.com/2yaf2wb.png"},
+  {id:6, name:"ظ‚ظ‡ظˆط© ظ„ظٹظ†ط¬ط²ظٹ ط§ظ„ط³ظˆط¯ط§ط،", price:15500, points:10, img:"https://i.imgur.com/8Km9tLL.png"},
+  {id:7, name:"ط¹ط³ظ„ ط§ظ„ط³ط¯ط± ط§ظ„ط·ط¨ظٹط¹ظٹ", price:39500, points:35, img:"https://i.imgur.com/Qr2pJdR.png"},
+  {id:8, name:"ط´ط§ظٹ ظ„ظٹظ†ط¬ط²ظٹ", price:97000, points:70, img:"https://i.imgur.com/8Km9tLL.png"},
+  {id:9, name:"ط¹طµظٹط± ظƒظˆط±ط¯ظٹط¨ط§ظٹظ† 285ظ…ظ„", price:35000, points:20, img:"https://i.imgur.com/3ZQ3Z9O.png"},
+  {id:10, name:"ط¹طµظٹط± ظƒظˆط±ط¯ظٹط¨ط§ظٹظ† 700ظ…ظ„", price:55500, points:35, img:"https://i.imgur.com/3ZQ3Z9O.png"},
+  {id:11, name:"ط²ظٹ ظ…ظٹظ†طھ ط¨ظ„ط³", price:18750, points:26, img:"https://i.imgur.com/Qr2pJdR.png"},
+  {id:12, name:"ظپظٹطھط§ ظƒط§ظپظٹ", price:60250, points:16, img:"https://i.imgur.com/8Km9tLL.png"},
+  {id:13, name:"ط³ظٹط±ط§ظ„ظٹط§ ظƒط±ظٹظ…", price:91500, points:30, img:"https://i.imgur.com/Qr2pJdR.png"},
+  {id:14, name:"ظ…ظٹط±ظٹ ظ„ط¨ط§ظ†ط³", price:11500, points:6, img:"https://i.imgur.com/Qr2pJdR.png"},
+  {id:15, name:"ط³ط¨ظٹط±ظˆظ„ظٹظ†ط§", price:20750, points:17, img:"https://i.imgur.com/Qr2pJdR.png"},
+];
+
+// عکظ…ط§ط±ط§ ظˆط§طھط³ط§ظ¾غŒ ع©ظˆظ…ظ¾ط§ظ†غŒغژ - ع¤غژط±غژ ط¨ع¯غ†ع•غ•
+const COMPANY_WHATSAPP = "9647508116860"; // ط¨غژ + ط¯ط§ظ†غ•. ظ…ط«ظ„ط§ 9647507766394
