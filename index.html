@@ -1,57 +1,40 @@
-<div class="text-right">
-                            <p class="text-green-700 font-bold">${p.price.toLocaleString()} IQD</p>
-                            <p class="text-[10px] bg-blue-50 text-blue-700 px-2 rounded-full inline-block italic">${p.pv} PV</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="updateCart(${p.id}, -1)" class="bg-gray-100 w-8 h-8 rounded-lg font-bold text-red-500">-</button>
-                            <span id="qty-${p.id}" class="font-bold w-4 text-center">0</span>
-                            <button onclick="updateCart(${p.id}, 1)" class="bg-green-100 w-8 h-8 rounded-lg font-bold text-green-700">+</button>
-                        </div>
-                    </div>
-                </div>
-            ).join('');
-        }
-
-        function updateCart(id, change) {
-            cart[id] = (cart[id] || 0) + change;
-            if (cart[id] <= 0) delete cart[id];
+}
+            if(count === 0) return alert("تکایە بەرهەمەکێ هەلبژێرە!");
             
-            document.getElementById(qty-${id}).innerText = cart[id] || 0;
-            updateSummary();
+            document.getElementById('finalPrice').innerText = totalP.toLocaleString();
+            document.getElementById('finalPV').innerText = totalV;
+            document.getElementById('page1').classList.add('hidden');
+            document.getElementById('page2').classList.remove('hidden');
+            window.scrollTo(0,0);
         }
 
-        function updateSummary() {
-            let total = 0, pv = 0, count = 0;
-            for (let id in cart) {
-                const p = products.find(prod => prod.id == id);
-                total += p.price * cart[id];
-                pv += p.pv * cart[id];
-                count += cart[id];
+        function sendToWhatsApp() {
+            const name = document.getElementById('memberName').value;
+            const code = document.getElementById('memberCode').value;
+            const loc = document.getElementById('customerLoc').value;
+            const phone = document.getElementById('customerPhone').value;
+
+            if(!name  !loc  !phone) return alert("تکایە هەمی خانان تژی بکە!");
+
+            let msg = 📋 *تەلەبیاتا DXN نوو* %0A%0A;
+            msg += 👤 ناڤێ ئەندامی: *${name}*%0A;
+            msg += 🆔 کۆدێ ئەندامی: *${code}*%0A;
+            msg += 📍 جهـ: *${loc}*%0A;
+            msg += 📞 تەلەفۆن: *${phone}*%0A%0A;
+            msg += 📦 *لیستا بەرهەمان:* %0A;
+
+            for(let id in cart) {
+                if(cart[id].qty > 0) {
+                    msg += ▫️ ${cart[id].name} (x${cart[id].qty})%0A;
+                }
             }
-            
-            document.getElementById('total-price').innerText = total.toLocaleString();
-            document.getElementById('total-pv').innerText = pv;
-            document.getElementById('cart-count').innerText = count;
-            
-            const bar = document.getElementById('cart-bar');
-            bar.style.transform = count > 0 ? "translateY(0)" : "translateY(100%)";
-        }
 
-        function checkout() {
-            let msg = "سڵاو کاکە، من دڤێت ئەڤان بەرهەمان تەلەب بکەم:%0A%0A";
-            for (let id in cart) {
-                const p = products.find(prod => prod.id == id);
-                msg += 🔘 *${p.name}* (عددا: ${cart[id]})%0A;
-            }
-            msg += %0A💰 کۆما پارەی: ${document.getElementById('total-price').innerText} IQD;
-            msg += %0A💎 کۆما خالان: ${document.getElementById('total-pv').innerText} PV;
-            msg += %0A%0Aهیڤییە بەرهەم ل سەر ناڤ و نیشانێن من بهێنە رەوانەکرن.;
-            
-            // ژمارا واتساپا کومپانیێ ل ڤێرە بگوهۆڕە
-            window.open(https://wa.me/9647507766394?text=${msg}`);
-        }
+            msg += %0A💰 کۆما پارەی: *${document.getElementById('finalPrice').innerText} IQD*;
+            msg += %0A💎 کۆما خالان: *${document.getElementById('finalPV').innerText} PV*;
+            msg += %0A%0A✅ هیڤییە بهێتە جێبەجێکرن.;
 
-        init();
+            window.open(https://wa.me/9647508168860?text=${msg});
+        }
     </script>
 </body>
-</html> 
+</html>
